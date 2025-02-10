@@ -81,6 +81,48 @@ class BatteryLaptop(models.Model):
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
 
+class MaterialsHeadset(models.Model):
+    headband_cushion = models.CharField(max_length=100)
+    ear_cushions = models.CharField(max_length=100)
+    slider_arm = models.CharField(max_length=100)
+
+
+class AdditionalFeaturesHeadset(models.Model):
+    busy_light = models.CharField(max_length=100)
+    controls = models.CharField(max_length=100)
+    certifications = models.CharField(max_length=100)
+    warranty = models.CharField(max_length=100)
+
+
+class PhysicalSpecificationHeadset(models.Model):
+    dimensions = models.CharField(max_length=100)
+    weight = models.CharField(max_length=100)
+    materials = models.ForeignKey(MaterialsHeadset, on_delete=models.CASCADE)
+
+
+class FrequencyResponseHeadset(models.Model):
+    music_mode = models.CharField(max_length=100)
+    speak_mode = models.CharField(max_length=100)
+
+
+class MicrophoneHeadset(models.Model):
+    type = models.CharField(max_length=100)
+    noise_cancelling = models.BooleanField()
+    frequency_range = models.CharField(max_length=100)
+
+
+class AudioFeaturesHeadset(models.Model):
+    speaker_size = models.CharField(max_length=100)
+    frequency_response = models.ForeignKey(FrequencyResponseHeadset, on_delete=models.CASCADE)
+    microphone = models.ForeignKey(MicrophoneHeadset, on_delete=models.CASCADE)
+    hearing_protection = models.CharField(max_length=200)
+
+
+class ConnectivityHeadset(models.Model):
+    connection_type = models.CharField(max_length=100)
+    cable_length = models.CharField(max_length=100)
+
+
 class LaptopSpec(models.Model):
     brand = models.ForeignKey(EquipmentBrand, on_delete=models.CASCADE)
     model = models.ForeignKey(EquipmentBrandModel, on_delete=models.CASCADE)
@@ -100,3 +142,13 @@ class LaptopSpec(models.Model):
     battery = models.ForeignKey(BatteryLaptop, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
+
+
+class HeadsetSpec(models.Model):
+    brand = models.ForeignKey(EquipmentBrand, on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=200)
+    audio_features = models.ForeignKey(AudioFeaturesHeadset, on_delete=models.CASCADE)
+    connectivity = models.ForeignKey(ConnectivityHeadset, on_delete=models.CASCADE)
+    physical_specifications = models.ForeignKey(PhysicalSpecificationHeadset, on_delete=models.CASCADE)
+    additional_features = models.ForeignKey(AdditionalFeaturesHeadset, on_delete=models.CASCADE)
+
