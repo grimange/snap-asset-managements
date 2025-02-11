@@ -16,6 +16,7 @@ class EquipmentBrand(models.Model):
 class EquipmentBrandModel(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
+    type = models.ForeignKey(EquipmentType, on_delete=models.CASCADE)
     brand = models.ForeignKey(EquipmentBrand, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
@@ -26,8 +27,8 @@ class Processor(models.Model):
     base_frequency = models.CharField(max_length=100)
     cache = models.CharField(max_length=100)
     max_turbo_frequency = models.CharField(max_length=100)
-    cores = models.IntegerField(max_length=10)
-    threads = models.IntegerField(max_length=10)
+    cores = models.IntegerField()
+    threads = models.IntegerField()
 
 class DisplayLaptop(models.Model):
     type = models.CharField(max_length=100)
@@ -203,7 +204,7 @@ class VideoOtherInputsMonitor(models.Model):
     input_output_connectors = models.TextField()
     hdcp_support = models.CharField(max_length=100)
     video_cables_included = models.TextField()
-    audio = models.CharField()
+    audio = models.CharField(max_length=100)
 
 class PowerMonitor(models.Model):
     power_supply = models.CharField(max_length=100)
@@ -273,7 +274,6 @@ class ConnectivityKM(models.Model):
     compatibility = models.TextField()
 
 class LaptopSpec(models.Model):
-    equipment_type = models.ForeignKey(EquipmentType, on_delete=models.CASCADE)
     model = models.ForeignKey(EquipmentBrandModel, on_delete=models.CASCADE)
     color = models.CharField(max_length=100)
     operating_system = models.CharField(max_length=100)
@@ -294,7 +294,6 @@ class LaptopSpec(models.Model):
 
 
 class HeadsetSpec(models.Model):
-    equipment_type = models.ForeignKey(EquipmentType, on_delete=models.CASCADE)
     model = models.ForeignKey(EquipmentBrandModel, on_delete=models.CASCADE)
     audio_features = models.ForeignKey(AudioFeaturesHeadset, on_delete=models.CASCADE)
     connectivity = models.ForeignKey(ConnectivityHeadset, on_delete=models.CASCADE)
@@ -303,7 +302,6 @@ class HeadsetSpec(models.Model):
 
 
 class WebcamSpec(models.Model):
-    equipment_type = models.ForeignKey(EquipmentType, on_delete=models.CASCADE)
     model = models.ForeignKey(EquipmentBrandModel, on_delete=models.CASCADE)
     video = models.ForeignKey(VideoWebcam, on_delete=models.CASCADE)
     photo = models.ForeignKey(PhotoWebcam, on_delete=models.CASCADE)
@@ -315,7 +313,6 @@ class WebcamSpec(models.Model):
     dimensions = models.ForeignKey(DimensionsWebcam, on_delete=models.CASCADE)
 
 class MonitorSpec(models.Model):
-    equipment_type = models.ForeignKey(EquipmentType, on_delete=models.CASCADE)
     model = models.ForeignKey(EquipmentBrandModel, on_delete=models.CASCADE)
     display = models.ForeignKey(DisplayMonitor, on_delete=models.CASCADE)
     user_controls = models.ForeignKey(UserControlsMonitor, on_delete=models.CASCADE)
@@ -327,7 +324,6 @@ class MonitorSpec(models.Model):
 
 
 class KMSpec(models.Model):
-    equipment_type = models.ForeignKey(EquipmentType, on_delete=models.CASCADE)
     model = models.ForeignKey(EquipmentBrandModel, on_delete=models.CASCADE)
     keyboard = models.ForeignKey(KeyboardKM, on_delete=models.CASCADE)
     mouse = models.ForeignKey(MouseKM, on_delete=models.CASCADE)
@@ -336,10 +332,9 @@ class KMSpec(models.Model):
 
 
 class Equipment(models.Model):
-    equipment_type = models.ForeignKey(EquipmentType, on_delete=models.CASCADE)
     model = models.ForeignKey(EquipmentBrandModel, on_delete=models.CASCADE)
     serial_number = models.CharField(max_length=150)
     notes = models.TextField()
-
+    status = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
