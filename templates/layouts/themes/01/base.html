@@ -9,6 +9,7 @@
         <meta name="description" content="Snapscale IT Department Asset Management System">
         <meta name="keywords" content="snapscale IT Department Asset Management System">
         <meta name="author" content="IT Department">
+        <meta name="csrf-token" content="{{ csrf_token }}">
         <link rel="icon" href="{% static 'assets/images/favicon.png' %}" type="image/x-icon">
         <link rel="shortcut icon" href="{% static 'assets/images/favicon.png' %}" type="image/x-icon">
         <title>Snapscale - Asset Management System</title>
@@ -66,6 +67,51 @@
     <!-- Page Header Ends -->
       <!-- Page Body Start-->
 
+    <div class="modal fade modal-bookmark" id="newEquipmentModal" tabindex="-1" role="dialog" aria-labelledby="newEquipmentModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content custom-input">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="newEquipmentModalLabel">Add Equipment</h5>
+                  <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="form-bookmark needs-validation" id="newEquipmentForm" novalidate="">
+                        <div class="row">
+                            <div class="mb-3 mt-0 col-md-6" id="equipmentTypeSelectWrapper">
+                                <label class="form-label">Equipment Type</label>
+                                <select class="selectpicker search-picker" aria-label="Group" id="equipmentTypeSelect" disabled>
+                                  <option value="" selected> </option>
+                                </select>
+                            </div>
+                            <div class="mb-3 mt-0 col-md-6" id="brandSelectWrapper">
+                                <label class="form-label">Brand</label>
+                                <select class="selectpicker search-picker" aria-label="Group" data-live-search="true" id="brandSelect" disabled>
+                                  <option value="" selected> </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 mt-0 col-md-6">
+                                <label class="form-label">Model</label>
+                                <select class="selectpicker search-picker" aria-label="Group" data-live-search="true" id="modelSelect" disabled>
+                                  <option value="" selected> </option>
+                                </select>
+                            </div>
+                            <div class="mb-3 mt-2 col-md-6">
+                                <label class="form-label">Serial Number</label>
+                                <input class="form-control" type="text" id="serialNumber" required>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                      <button class="btn btn-primary" type="button" id="saveEquipment" disabled>Submit</button>
+                      <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
     <!-- latest jquery-->
     <script src="{% static 'assets/js/jquery.min.js' %}"></script>
@@ -86,6 +132,6 @@
     <script src="{% static 'assets/js/sidebar-menu.js' %}"></script>
     <script src="{% static 'assets/js/script.js' %}"></script>
     <script src="{% static 'assets/js/script1.js' %}"></script>
-    <script src="{% static 'assets/ams/js/main.js' %}"></script>
+    <script type="module" src="{% static 'assets/ams/js/main.js' %}"></script>
   </body>
 </html>
