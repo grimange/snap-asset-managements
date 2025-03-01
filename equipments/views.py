@@ -18,11 +18,17 @@ class EquipmentAddView(EquipmentMainView):
     permission_required = 'equipments.add_equipment'
     def post(self, request, *args, **kwargs):
         select = request.POST.get('select', None)
+        action = request.POST.get('action', None)
 
-        if select == 'Equipment Type':
+        if select == 'Equipment Type' and action == 'get':
             types = EquipmentType.objects.filter(is_active=True).values('id','name')
             return JsonResponse(list(types), safe=False)
-        elif select == 'Brand':
+        elif select == 'Brand' and action == 'get':
             brands = EquipmentBrand.objects.filter(is_active=True).values('id','name')
             return JsonResponse(list(brands), safe=False)
+        elif select == 'Equipment Type' and action == 'add':
+            name = request.POST.get('name', None)
+            if name:
+                EquipmentType.objects.create(name=name)
+                return JsonResponse({'success': 'Equipment Type Added'})
         return JsonResponse({'error': 'Invalid Request'})

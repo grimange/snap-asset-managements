@@ -10,31 +10,79 @@ export class Equipment extends AMSGlobal {
 
     }
 
-    reloadSelect(selectId, selectName) {
+    reloadSelect(selectId, selectName, selectCount = 0) {
+        const search = selectCount > 10
         return '<label class="form-label">'+ selectName +'</label>' +
-               '<select class="selectpicker search-picker" aria-label="Group" id="'+ selectId +'" disabled>' +
+               '<select class="selectpicker search-picker" aria-label="Group" data-live-search="'+ search +'"  id="'+ selectId +'" disabled>' +
                     '<option value="" selected> </option>'+
                '</select>'
     }
+
+    loadAddModal(selectName) {
+        const self = this
+        const addModal = $("#addEquipmentModal")
+        const addLabel = $("#addEquipmentModalLabel")
+        const addPartName = $("#addPartName")
+        const savePartButton = $("#savePartButton")
+
+        addModal.modal('show')
+        addLabel.text("Add " + selectName)
+
+        savePartButton.off('click').on('click', function(){
+            if(addPartName.val().length < 5) {
+                addPartName.addClass('is-invalid')
+                addPartName.focus()
+                return false
+            }
+            else {
+                addPartName.removeClass('is-invalid')
+            }
+
+            $.ajax({type:'post', url:self.url,
+                data:{"action": "add", "csrfmiddlewaretoken":self.csrftoken, "name": addPartName.val()},
+                beforeSend:function(){
+                    addPartName.attr("disabled", true)
+                    savePartButton.attr("disabled", true)
+                    savePartButton.html('Submit <i class="fa-solid fa-spinner fa-spin-pulse"></i>')
+                },
+                success:function(response){
+                    savePartButton.html('Submit')
+                    savePartButton.attr("disabled", false)
+
+                },
+                error:function(response){
+                    console.log(response)
+                }
+            })
+        })
+
+    }
     loadSelect(selectId, selectWrapperId, selectName) {
-        const self = this;
+        const self = this
         $.ajax({type:'post', url:this.url,
-            data:{"select":selectName, "csrfmiddlewaretoken":self.csrftoken},
+            data:{"select":selectName, "action": "get", "csrfmiddlewaretoken":self.csrftoken},
             beforeSend:function(){
                 $("#" + selectWrapperId).empty().html('<i class="fa-solid fa-spinner fa-spin-pulse"></i>')
             },
             success:function(response){
-                $("#" + selectWrapperId).empty().html(self.reloadSelect(selectId, selectName))
+                $("#" + selectWrapperId).empty().html(self.reloadSelect(selectId, selectName, response.length))
                 const select = $("#" + selectId)
                 select.selectpicker('refresh')
+                select.empty().attr("disabled", false)
+                select.append('<option value="">Select '+ selectName +'</option>')
                 if(Array.isArray(response) && response.length > 0) {
-                    select.empty().attr("disabled", false)
-                    select.append('<option value="0">Select Equipment Type</option>')
                     response.forEach(element => {
                         select.append('<option value="'+element.id+'">'+element.name+'</option>')
                     });
-                    select.selectpicker('refresh')
                 }
+                select.append('<option value="new">Add '+ selectName +'</option>')
+                select.selectpicker('refresh')
+                select.off('change').on('change', function(){
+                    if($(this).val() === "new") {
+                        $("#newEquipmentModal").modal('hide')
+                        self.loadAddModal(selectName)
+                    }
+                })
             },
             error:function(response){
                 console.log(response)

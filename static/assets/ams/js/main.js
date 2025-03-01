@@ -8,3 +8,7 @@ $("#newEquipmentModal").on("show.bs.modal", function () {
 
     equip.loadSelect('brandSelect', 'brandSelectWrapper', 'Brand')
 })
+
+$("#addEquipmentModal").on("hidden.bs.modal", function () {
+    $("#newEquipmentModal").modal('show')
+})
