@@ -1,4 +1,5 @@
 {% load static %}
+{% load ams_group_tags %}
 
 <div class="sidebar-wrapper" data-sidebar-layout="stroke-svg">
           <div>
@@ -26,22 +27,28 @@
                       <svg class="fill-icon">
                         <use href="{% static 'assets/svg/icon-sprite.svg' %}#fill-home"></use>
                       </svg><span>Dashboard</span></a></li>
-                  <li class="sidebar-list"><i class="fa-solid fa-thumbtack"></i><a class="sidebar-link sidebar-title" href="#">
-                      <svg class="stroke-icon">
-                        <use href="{% static 'assets/svg/icon-sprite.svg' %}#stroke-starter-kit"></use>
-                      </svg>
-                      <svg class="fill-icon">
-                        <use href="{% static 'assets/svg/icon-sprite.svg' %}#fill-starter-kit"></use>
-                      </svg><span>Assets</span></a>
-                    <ul class="sidebar-submenu">
-                      <li>
-                          <a class="submenu-title" href="#" data-bs-toggle="modal" data-bs-target="#newEquipmentModal">New</a>
+
+                  {% if user|in_group:"AMS Admin" %}
+                      <li class="sidebar-list">
+                          <i class="fa-solid fa-thumbtack"></i>
+                          <a class="sidebar-link sidebar-title" href="#">
+                              <svg class="stroke-icon">
+                                <use href="{% static 'assets/svg/icon-sprite.svg' %}#stroke-starter-kit"></use>
+                              </svg>
+                              <svg class="fill-icon">
+                                <use href="{% static 'assets/svg/icon-sprite.svg' %}#fill-starter-kit"></use>
+                              </svg><span>Assets</span>
+                          </a>
+                        <ul class="sidebar-submenu">
+                          <li>
+                              <a class="submenu-title" href="#" data-bs-toggle="modal" data-bs-target="#newEquipmentModal">New</a>
+                          </li>
+                          <li>
+                              <a class="submenu-title" href="#">List</a>
+                          </li>
+                        </ul>
                       </li>
-                      <li>
-                          <a class="submenu-title" href="#">List</a>
-                      </li>
-                    </ul>
-                  </li>
+                  {% endif %}
                   <li class="sidebar-list"><i class="fa-solid fa-thumbtack"></i><a class="sidebar-link sidebar-title" href="#" target="_blank">
                       <svg class="stroke-icon">
                         <use href="{% static 'assets/svg/icon-sprite.svg' %}#stroke-social"></use>

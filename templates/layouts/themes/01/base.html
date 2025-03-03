@@ -7,85 +7,24 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="Snapscale IT Department Asset Management System">
-        <meta name="keywords" content="snapscale IT Department Asset Management System">
-        <meta name="author" content="IT Department">
-        <link rel="icon" href="{% static 'assets/images/favicon.png' %}" type="image/x-icon">
-        <link rel="shortcut icon" href="{% static 'assets/images/favicon.png' %}" type="image/x-icon">
+        <meta name="keywords" content="Snapscale IT Department Asset Management System">
+        <meta name="author" content="RA">
+        <meta name="csrf-token" content="{{ csrf_token }}">
         <title>Snapscale - Asset Management System</title>
-        <!-- Google font-->
-        <link href="https://fonts.googleapis.com/css?family=Rubik:400,400i,500,500i,700,700i&amp;display=swap" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,700,700i,900&amp;display=swap" rel="stylesheet">
-        <!-- Font Awesome-->
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/fontawesome.css' %}">
-        <!-- ico-font-->
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/vendors/icofont.css' %}">
-        <!-- Themify icon-->
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/vendors/themify.css' %}">
-        <!-- Flag icon-->
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/vendors/flag-icon.css' %}">
-        <!-- Feather icon-->
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/vendors/feather-icon.css' %}">
-        <!-- Plugins css start-->
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/vendors/slick.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/vendors/slick-theme.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/vendors/scrollbar.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/vendors/prism.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/vendors/date-picker.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/vendors/select/bootstrap-select.min.css' %}">
-        <!-- Plugins css Ends-->
-        <!-- Bootstrap css-->
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/vendors/bootstrap.css' %}">
-        <!-- App css-->
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/style.css' %}">
-        <link id="color" rel="stylesheet" href="{% static 'assets/css/color-1.css' %}" media="screen">
-        <!-- Responsive css-->
-        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/responsive.css' %}">
+        {% include 'layouts/themes/01/css-scripts.html' %}
     </head>
     <body>
     <!-- loader starts-->
-    <div class="loader-wrapper">
-      <div class="loader-index"> <span></span></div>
-      <svg>
-        <defs></defs>
-        <filter id="goo">
-          <fegaussianblur in="SourceGraphic" stddeviation="11" result="blur"></fegaussianblur>
-          <fecolormatrix in="blur" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo"> </fecolormatrix>
-        </filter>
-      </svg>
-    </div>
+    {% include 'layouts/themes/01/loader-wrapper.html' %}
     <!-- loader ends-->
-    <!-- tap on top starts-->
-    <div class="tap-top"><i data-feather="chevrons-up"></i></div>
-    <!-- tap on tap ends-->
     <!-- page-wrapper Start-->
     <div class="page-wrapper compact-wrapper" id="pageWrapper">
-    <!-- Page Header Start-->
         {% block header %}
 
         {% endblock header %}
-    <!-- Page Header Ends -->
-      <!-- Page Body Start-->
-
+        {% include 'layouts/themes/01/dialog/newEquipment.html' %}
+        {% include 'layouts/themes/01/dialog/addEquipment.html' %}
     </div>
-    <!-- latest jquery-->
-    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
-    <!-- Bootstrap js-->
-    <script src="{% static 'assets/js/bootstrap/bootstrap.bundle.min.js' %}"></script>
-    <!-- feather icon js-->
-    <script src="{% static 'assets/js/icons/feather-icon/feather.min.js' %}"></script>
-    <script src="{% static 'assets/js/icons/feather-icon/feather-icon.js' %}"></script>
-    <!-- scrollbar js-->
-    <script src="{% static 'assets/js/scrollbar/simplebar.min.js' %}"></script>
-    <script src="{% static 'assets/js/scrollbar/custom.js' %}"></script>
-    <script src="{% static 'assets/js/datepicker/date-picker/datepicker.js' %}"></script>
-    <script src="{% static 'assets/js/datepicker/date-picker/datepicker.en.js' %}"></script>
-    <script src="{% static 'assets/js/datepicker/date-picker/datepicker.custom.js' %}"></script>
-    <script src="{% static 'assets/js/select/bootstrap-select.min.js' %}"></script>
-    <!-- Sidebar jquery-->
-    <script src="{% static 'assets/js/config.js' %}"></script>
-    <script src="{% static 'assets/js/sidebar-menu.js' %}"></script>
-    <script src="{% static 'assets/js/script.js' %}"></script>
-    <script src="{% static 'assets/js/script1.js' %}"></script>
-    <script src="{% static 'assets/ams/js/main.js' %}"></script>
+    {% include 'layouts/themes/01/js-scripts.html' %}
   </body>
 </html>
