@@ -1,4 +1,5 @@
-from django.shortcuts import render
+import json
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -11,11 +12,11 @@ from rest_framework.views import APIView
 @permission_classes([IsAuthenticated])
 def receive_data(request):
     """Receives data from PowerShell"""
-    data = request.data  # Get JSON data from request
-
-    # Process data (example: log to console)
-    print(f"Received data: {data}")
-
+    try :
+        data = request.data
+        print(data['motherboard'])
+    except Exception as error:
+        return Response({"error": str(error)}, status=400)
     return Response({"message": "Data received successfully"}, status=status.HTTP_200_OK)
 
 
