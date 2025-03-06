@@ -1,6 +1,8 @@
+import pytz
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.contrib.auth import get_user_model
+from datetime import datetime, timedelta
 
 class BaseBoard(models.Model):
     bios_uuid = models.CharField(max_length=200, unique=True)
@@ -10,19 +12,18 @@ class BaseBoard(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
-class MemoryType(models.Model):
-    id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
-
 class MachineInformation(models.Model):
     guid = models.CharField(max_length=200, unique=True)
+    system_type = models.CharField(max_length=100)
     motherboard = models.ForeignKey(BaseBoard, on_delete=models.CASCADE)
     primary_owner_name = models.CharField(max_length=100)
     hostname = models.CharField(max_length=100)
     domain = models.CharField(max_length=100)
-    system_type = models.CharField(max_length=100)
+    os_name = models.CharField(max_length=100, null=True)
+    os_version = models.CharField(max_length=100, null=True)
+    os_build = models.CharField(max_length=100, null=True)
+    os_install_date = models.DateTimeField(null=True)
+    last_boot_up = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
@@ -42,25 +43,27 @@ class GpuInformation(models.Model):
     vertical_resolution = models.IntegerField()
     horizontal_resolution = models.IntegerField()
     max_refresh_rate = models.IntegerField()
-    colors = models.IntegerField()
+    colors = models.BigIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
 class MemoryInformation(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
-    type = models.ForeignKey(MemoryType, on_delete=models.CASCADE)
+    sn = models.CharField(max_length=200)
+    part_number = models.CharField(max_length=100, null=True)
+    device_locator = models.CharField(max_length=100, null=True)
+    type = models.CharField(max_length=100)
     capacity = models.CharField(max_length=100)
     speed = models.CharField(max_length=100)
     manufacturer = models.CharField(max_length=100)
-    sn = models.CharField(max_length=200, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
 class MemoryStatistics(models.Model):
-    memory = models.ForeignKey(MemoryInformation, on_delete=models.CASCADE)
-    total_size = models.CharField(max_length=100)
-    used_size = models.CharField(max_length=100)
-    free_size = models.CharField(max_length=100)
+    machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
+    total_size = models.BigIntegerField()
+    used_size = models.BigIntegerField()
+    free_size = models.BigIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
@@ -68,11 +71,11 @@ class NetworkAdapter(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=200)
-    mac_address = models.CharField(max_length=200, unique=True)
+    mac_address = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
-class NetworkAdapterStatistics(models.Model):
+class NetworkLog(models.Model):
     adapter = models.ForeignKey(NetworkAdapter, on_delete=models.CASCADE)
     status = models.CharField(max_length=100)
     speed = models.CharField(max_length=100)
@@ -83,31 +86,25 @@ class NetworkAdapterStatistics(models.Model):
 class DiskDrive(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
-    sn = models.CharField(max_length=200, unique=True)
-    size = models.CharField(max_length=100)
+    sn = models.CharField(max_length=200)
+    size = models.BigIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
 class VolumeInformation(models.Model):
-    disk = models.ForeignKey(DiskDrive, on_delete=models.CASCADE)
-    partition = models.CharField(max_length=200)
-    volume_label = models.CharField(max_length=200)
-    file_system = models.CharField(max_length=200)
-    drive_letter = models.CharField(max_length=200)
-    health = models.CharField(max_length=200)
-    status = models.CharField(max_length=200)
-    total_size = models.CharField(max_length=200)
-    free_space = models.CharField(max_length=200)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
-
-class GeoLocation(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
+    file_system = models.CharField(max_length=200)
+    drive_letter = models.CharField(max_length=200, null=True)
+    health_status = models.CharField(max_length=200)
+    operational_status = models.CharField(max_length=200)
+    size_remaining = models.CharField(max_length=200)
+    size = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
 class GeoLocationLog(models.Model):
-    geo_location = models.ForeignKey(GeoLocation, on_delete=models.CASCADE)
+    machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
+    ip_address = models.CharField(max_length=100, null=True)
     latitude = models.CharField(max_length=100)
     longitude = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -118,6 +115,12 @@ class PnpDevice(models.Model):
     device_id = models.CharField(max_length=200, unique=True)
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
+
+class CpuUsageLog(models.Model):
+    cpu = models.ForeignKey(CpuInformation, on_delete=models.CASCADE)
+    usage = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
@@ -132,29 +135,116 @@ class AssignDesktopManager(models.Manager):
 
     def __get_machine(self, machine, motherboard):
         try:
-            return MachineInformation.objects.get(machine_guid=machine['guid'])
+            return MachineInformation.objects.get(guid=machine['guid'])
         except ObjectDoesNotExist:
             return MachineInformation.objects.create(motherboard=self.__get_motherboard(motherboard), **machine)
 
     @staticmethod
     def __get_cpu(machine, cpu):
         try:
-            return CpuInformation.objects.get(processor_id=cpu['processor_id'])
+            return CpuInformation.objects.get(processor_id=cpu['processor_id'], machine=machine)
         except ObjectDoesNotExist:
             return CpuInformation.objects.create(machine=machine, **cpu)
 
+    @staticmethod
+    def __save_disk(machine, disk):
+        try:
+            return DiskDrive.objects.get(sn=disk['sn'], machine=machine)
+        except ObjectDoesNotExist:
+            return DiskDrive.objects.create(machine=machine, **disk)
+
+    @staticmethod
+    def __get_network_adapter(machine, network):
+        try:
+            return NetworkAdapter.objects.get(mac_address=network['mac_address'], machine=machine)
+        except ObjectDoesNotExist:
+            return NetworkAdapter.objects.create(machine=machine, name=network['name'],
+                                                 description=network['description'], mac_address=network['mac_address'])
+
+    @staticmethod
+    def __save_volumes(machine, volumes):
+        for volume in volumes:
+            VolumeInformation.objects.create(machine=machine, **volume)
+
+    def __save_disks(self, machine, disks):
+        if type(disks) is list:
+            for disk in disks:
+                self.__save_disk(machine, disk)
+        else:
+            self.__save_disk(machine, disks)
+
+    def __save_networks(self, machine, networks):
+        for network in networks:
+            adapter = self.__get_network_adapter(machine, network)
+            self.__save_network(adapter, network)
+
+    @staticmethod
+    def __save_network(adapter, network):
+        try:
+            return NetworkLog.objects.get(adapter=adapter, ip_address=network['ip_address'])
+        except ObjectDoesNotExist:
+            return NetworkLog.objects.create(adapter=adapter, status=network['status'], speed=network['speed'],
+                                             ip_address=network['ip_address'])
+
+    def __save_rams(self, machine, rams):
+        for ram in rams:
+            self.__save_ram(machine, ram)
+
+    @staticmethod
+    def __save_ram(machine, memory):
+        try:
+            return MemoryInformation.objects.get(sn=memory['sn'], machine=machine)
+        except ObjectDoesNotExist:
+            return MemoryInformation.objects.create(machine=machine, **memory)
+
+    @staticmethod
+    def __save_gpu(machine, gpu):
+        try:
+            return GpuInformation.objects.get(pnp_device_id=gpu['pnp_device_id'], machine=machine)
+        except ObjectDoesNotExist:
+            return GpuInformation.objects.create(machine=machine, **gpu)
+
+    def __save_pnp_devices(self, machine, pnp_devices):
+        for pnp_device in pnp_devices:
+            self.__save_pnp_device(machine, pnp_device)
+
+    @staticmethod
+    def __save_pnp_device(machine, pnp_device):
+        try:
+            return PnpDevice.objects.get(device_id=pnp_device['device_id'], machine=machine)
+        except ObjectDoesNotExist:
+            return PnpDevice.objects.create(machine=machine, **pnp_device)
+
     def __save_cpu_usage(self, machine, cpu):
         try:
-            cpu = self.__get_cpu(machine, cpu)
+            cpuObject = self.__get_cpu(machine, cpu)
         except Exception as error:
             print(error)
         else:
-            pass
+            CpuUsageLog.objects.create(cpu=cpuObject, usage=cpu['usage'])
+
+    @staticmethod
+    def __save_memory_usage(machine, memory_usage):
+        MemoryStatistics.objects.create(machine=machine, **memory_usage)
+
+    @staticmethod
+    def __save_geo_location(machine, geo_location):
+        if not GeoLocationLog.objects.filter(machine=machine, latitude=geo_location['latitude'], longitude=geo_location['longitude']).exists():
+            GeoLocationLog.objects.create(machine=machine, **geo_location)
 
     def record(self, data):
+        print(data['chromeHistory'])
         machine = self.__get_machine(data['machine'], data['motherboard'])
 
         self.__save_cpu_usage(machine, data['cpu'])
+        self.__save_gpu(machine, data['gpu'])
+        self.__save_memory_usage(machine, data['memory_usage'])
+        self.__save_geo_location(machine, data['geo_location'])
+        self.__save_rams(machine, data['memory'])
+        self.__save_pnp_devices(machine, data['pnp_devices'])
+        self.__save_networks(machine, data['networks'])
+        self.__save_disks(machine, data['disks'])
+        self.__save_volumes(machine, data['volumes'])
 
 class Desktop(models.Model):
     machine = models.ForeignKey(MachineInformation, on_delete=models.CASCADE)
