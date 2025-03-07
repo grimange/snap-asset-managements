@@ -10,7 +10,6 @@ class BaseBoard(models.Model):
     model = models.CharField(max_length=100)
     manufacturer = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
 class MachineInformation(models.Model):
     guid = models.CharField(max_length=200, unique=True)
@@ -25,7 +24,6 @@ class MachineInformation(models.Model):
     os_install_date = models.DateTimeField(null=True)
     last_boot_up = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
 class CpuInformation(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
@@ -34,7 +32,6 @@ class CpuInformation(models.Model):
     cores = models.IntegerField()
     max_clock_speed = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
 class GpuInformation(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
@@ -45,7 +42,7 @@ class GpuInformation(models.Model):
     max_refresh_rate = models.IntegerField()
     colors = models.BigIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
+
 
 class MemoryInformation(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
@@ -57,7 +54,7 @@ class MemoryInformation(models.Model):
     speed = models.CharField(max_length=100)
     manufacturer = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
+
 
 class MemoryStatistics(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
@@ -65,7 +62,7 @@ class MemoryStatistics(models.Model):
     used_size = models.BigIntegerField()
     free_size = models.BigIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
+
 
 class NetworkAdapter(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
@@ -73,7 +70,6 @@ class NetworkAdapter(models.Model):
     description = models.CharField(max_length=200)
     mac_address = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
 class NetworkLog(models.Model):
     adapter = models.ForeignKey(NetworkAdapter, on_delete=models.CASCADE)
@@ -81,7 +77,7 @@ class NetworkLog(models.Model):
     speed = models.CharField(max_length=100)
     ip_address = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
+
 
 class DiskDrive(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
@@ -89,7 +85,6 @@ class DiskDrive(models.Model):
     sn = models.CharField(max_length=200)
     size = models.BigIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
 class VolumeInformation(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
@@ -100,7 +95,6 @@ class VolumeInformation(models.Model):
     size_remaining = models.CharField(max_length=200)
     size = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
 class GeoLocationLog(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
@@ -108,7 +102,7 @@ class GeoLocationLog(models.Model):
     latitude = models.CharField(max_length=100)
     longitude = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
+
 
 class PnpDevice(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
@@ -116,13 +110,13 @@ class PnpDevice(models.Model):
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
+
 
 class CpuUsageLog(models.Model):
     cpu = models.ForeignKey(CpuInformation, on_delete=models.CASCADE)
     usage = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
+
 
 class AssignDesktopManager(models.Manager):
 
@@ -135,7 +129,12 @@ class AssignDesktopManager(models.Manager):
 
     def __get_machine(self, machine, motherboard):
         try:
-            return MachineInformation.objects.get(guid=machine['guid'])
+            machine2 = MachineInformation.objects.get(guid=machine['guid'])
+            lbpObject = datetime.fromisoformat(machine['last_boot_up'])
+            if machine2.last_boot_up != lbpObject:
+                machine2.last_boot_up = lbpObject
+                machine2.save()
+            return machine2
         except ObjectDoesNotExist:
             return MachineInformation.objects.create(motherboard=self.__get_motherboard(motherboard), **machine)
 
@@ -232,8 +231,7 @@ class AssignDesktopManager(models.Manager):
         if not GeoLocationLog.objects.filter(machine=machine, latitude=geo_location['latitude'], longitude=geo_location['longitude']).exists():
             GeoLocationLog.objects.create(machine=machine, **geo_location)
 
-    def record(self, data):
-        print(data['chromeHistory'])
+    def record_machine(self, data):
         machine = self.__get_machine(data['machine'], data['motherboard'])
 
         self.__save_cpu_usage(machine, data['cpu'])
@@ -251,3 +249,95 @@ class Desktop(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     objects = AssignDesktopManager()
+
+class DesktopGlobalManager(models.Manager):
+    @staticmethod
+    def __get_machine(guid):
+        return MachineInformation.objects.get(guid=guid)
+
+    @staticmethod
+    def __get_user(username):
+        try:
+            return get_user_model().objects.get(username=username)
+        except ObjectDoesNotExist:
+            return get_user_model().objects.create(username=username)
+
+    def __desktop(self, user, machine):
+        try:
+            user2 = self.__get_user(user)
+            machine2 = self.__get_machine(machine)
+            return Desktop.objects.get(user=user2, machine=machine2)
+        except ObjectDoesNotExist:
+            return Desktop.objects.create(user=user2, machine=machine2)
+
+class ChromeUrlHistoryManager(DesktopGlobalManager):
+    def __save_url(self, desktop, history):
+        try:
+            self.get(url=history['url'], desktop=desktop)
+        except ObjectDoesNotExist:
+            self.create(desktop=desktop, **history)
+
+    def record(self, user, machine, urlHistories):
+        desktop = self.__desktop(user, machine)
+        for urlHistory in urlHistories:
+            self.__save_url(desktop, urlHistory)
+
+class ChromeUrlHistory(models.Model):
+    desktop = models.ForeignKey(Desktop, null=True, on_delete=models.CASCADE)
+    url = models.TextField()
+    title = models.CharField(max_length=200)
+    visit_count = models.IntegerField()
+    type_count = models.IntegerField()
+    last_visit_time = models.DateTimeField()
+    hidden = models.BooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    objects = ChromeUrlHistoryManager()
+
+
+class ChromeDownloadLogManager(DesktopGlobalManager):
+    def __save_download(self, desktop, download):
+        try:
+            self.get(guid=download['guid'], desktop=desktop)
+        except ObjectDoesNotExist:
+            self.create(desktop=desktop, **download)
+
+    def record(self, user, machine, downloads):
+        desktop = self.__desktop(user, machine)
+        for download in downloads:
+            self.__save_download(desktop, download)
+
+class ChromeDownloadLog(models.Model):
+    desktop = models.ForeignKey(Desktop, null=True, on_delete=models.CASCADE)
+    guid = models.CharField(max_length=200)
+    target_path = models.CharField(max_length=200)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    received_bytes = models.BigIntegerField()
+    total_bytes = models.BigIntegerField()
+    state = models.IntegerField()
+    danger_type = models.IntegerField()
+    interrupt_reason = models.IntegerField()
+    opened = models.IntegerField()
+    last_access_time = models.DateTimeField()
+    referrer = models.CharField(max_length=200)
+    site_url = models.CharField(max_length=200)
+    tab_referrer_url = models.CharField(max_length=200)
+    http_method = models.CharField(max_length=100)
+    by_ext_id = models.CharField(max_length=200)
+    by_ext_name = models.CharField(max_length=200)
+    mime_type = models.CharField(max_length=100)
+    original_mime_type = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    objects = ChromeDownloadLogManager()
+
+class ScreenshotManager(DesktopGlobalManager):
+    def save_image(self, user, machine, path):
+        desktop = self.__desktop(user, machine)
+        self.create(desktop=desktop, path=path)
+        return {"success": True}
+
+class Screenshot(models.Model):
+    desktop = models.ForeignKey(Desktop, null=True, on_delete=models.CASCADE)
+    path = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    objects = ScreenshotManager()
