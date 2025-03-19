@@ -37,10 +37,10 @@ class GpuInformation(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     pnp_device_id = models.CharField(max_length=200, unique=True)
-    vertical_resolution = models.IntegerField()
-    horizontal_resolution = models.IntegerField()
-    max_refresh_rate = models.IntegerField()
-    colors = models.BigIntegerField()
+    vertical_resolution = models.CharField(max_length=100, null=True)
+    horizontal_resolution = models.CharField(max_length=100, null=True)
+    max_refresh_rate = models.CharField(max_length=100, null=True)
+    colors = models.CharField(max_length=100, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -262,7 +262,7 @@ class DesktopGlobalManager(models.Manager):
         except ObjectDoesNotExist:
             return get_user_model().objects.create(username=username)
 
-    def __desktop(self, user, machine):
+    def desktop(self, user, machine):
         try:
             user2 = self.__get_user(user)
             machine2 = self.__get_machine(machine)
@@ -278,7 +278,7 @@ class ChromeUrlHistoryManager(DesktopGlobalManager):
             self.create(desktop=desktop, **history)
 
     def record(self, user, machine, urlHistories):
-        desktop = self.__desktop(user, machine)
+        desktop = self.desktop(user, machine)
         for urlHistory in urlHistories:
             self.__save_url(desktop, urlHistory)
 
@@ -287,7 +287,7 @@ class ChromeUrlHistory(models.Model):
     url = models.TextField()
     title = models.CharField(max_length=200)
     visit_count = models.IntegerField()
-    type_count = models.IntegerField()
+    typed_count = models.IntegerField()
     last_visit_time = models.DateTimeField()
     hidden = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -302,7 +302,7 @@ class ChromeDownloadLogManager(DesktopGlobalManager):
             self.create(desktop=desktop, **download)
 
     def record(self, user, machine, downloads):
-        desktop = self.__desktop(user, machine)
+        desktop = self.desktop(user, machine)
         for download in downloads:
             self.__save_download(desktop, download)
 
@@ -319,9 +319,9 @@ class ChromeDownloadLog(models.Model):
     interrupt_reason = models.IntegerField()
     opened = models.IntegerField()
     last_access_time = models.DateTimeField()
-    referrer = models.CharField(max_length=200)
-    site_url = models.CharField(max_length=200)
-    tab_referrer_url = models.CharField(max_length=200)
+    referrer = models.TextField()
+    site_url = models.TextField()
+    tab_referrer_url = models.TextField()
     http_method = models.CharField(max_length=100)
     by_ext_id = models.CharField(max_length=200)
     by_ext_name = models.CharField(max_length=200)
@@ -332,7 +332,7 @@ class ChromeDownloadLog(models.Model):
 
 class ScreenshotManager(DesktopGlobalManager):
     def save_image(self, user, machine, path):
-        desktop = self.__desktop(user, machine)
+        desktop = self.desktop(user, machine)
         self.create(desktop=desktop, path=path)
         return {"success": True}
 
