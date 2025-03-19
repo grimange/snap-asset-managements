@@ -10,10 +10,7 @@ Object.defineProperty(String.prototype, 'capitalize', {
 $("#newEquipmentModal").on("show.bs.modal", function () {
     const equip = new Equipment()
 
-    equip.loadSelect('equipmentTypeSelect', 'equipmentTypeSelectWrapper',
-        'Equipment Type')
-
-    equip.loadSelect('brandSelect', 'brandSelectWrapper', 'Brand')
+    equip.loadEquipment()
 })
 
 $("#addEquipmentModal").on("hidden.bs.modal", function () {
