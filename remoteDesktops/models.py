@@ -106,7 +106,7 @@ class GeoLocationLog(models.Model):
 
 class PnpDevice(models.Model):
     machine = models.ForeignKey(MachineInformation, null=True, on_delete=models.CASCADE)
-    device_id = models.CharField(max_length=200, unique=True)
+    device_id = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -143,7 +143,9 @@ class AssignDesktopManager(models.Manager):
         try:
             return CpuInformation.objects.get(processor_id=cpu['processor_id'], machine=machine)
         except ObjectDoesNotExist:
-            return CpuInformation.objects.create(machine=machine, **cpu)
+            return CpuInformation.objects.create(machine=machine, processor_id=cpu['processor_id'],
+                                                 name=cpu['name'], cores=int(cpu['cores']),
+                                                 max_clock_speed=int(cpu['max_clock_speed']))
 
     @staticmethod
     def __save_disk(machine, disk):
@@ -161,21 +163,27 @@ class AssignDesktopManager(models.Manager):
                                                  description=network['description'], mac_address=network['mac_address'])
 
     @staticmethod
-    def __save_volumes(machine, volumes):
+    def __save_volumes(machine, volumes, print_display=False):
         for volume in volumes:
             VolumeInformation.objects.create(machine=machine, **volume)
+        if print_display:
+            print('--- Volumes saved ---')
 
-    def __save_disks(self, machine, disks):
+    def __save_disks(self, machine, disks, print_display=False):
         if type(disks) is list:
             for disk in disks:
                 self.__save_disk(machine, disk)
         else:
             self.__save_disk(machine, disks)
+        if print_display:
+            print('--- Disks saved ---')
 
-    def __save_networks(self, machine, networks):
+    def __save_networks(self, machine, networks, print_display=False):
         for network in networks:
             adapter = self.__get_network_adapter(machine, network)
             self.__save_network(adapter, network)
+        if print_display:
+            print('--- Networks saved ---')
 
     @staticmethod
     def __save_network(adapter, network):
@@ -185,9 +193,14 @@ class AssignDesktopManager(models.Manager):
             return NetworkLog.objects.create(adapter=adapter, status=network['status'], speed=network['speed'],
                                              ip_address=network['ip_address'])
 
-    def __save_rams(self, machine, rams):
-        for ram in rams:
-            self.__save_ram(machine, ram)
+    def __save_rams(self, machine, rams, print_display=False):
+        if type(rams) is list:
+            for ram in rams:
+                self.__save_ram(machine, ram)
+        else:
+            self.__save_ram(machine, rams)
+        if print_display:
+            print('--- RAM usage saved ---')
 
     @staticmethod
     def __save_ram(machine, memory):
@@ -197,15 +210,19 @@ class AssignDesktopManager(models.Manager):
             return MemoryInformation.objects.create(machine=machine, **memory)
 
     @staticmethod
-    def __save_gpu(machine, gpu):
+    def __save_gpu(machine, gpu, print_display=False):
         try:
-            return GpuInformation.objects.get(pnp_device_id=gpu['pnp_device_id'], machine=machine)
+            GpuInformation.objects.get(pnp_device_id=gpu['pnp_device_id'], machine=machine)
         except ObjectDoesNotExist:
-            return GpuInformation.objects.create(machine=machine, **gpu)
+            GpuInformation.objects.create(machine=machine, **gpu)
+        if print_display:
+            print('--- GPU usage saved ---')
 
-    def __save_pnp_devices(self, machine, pnp_devices):
+    def __save_pnp_devices(self, machine, pnp_devices, print_display=False):
         for pnp_device in pnp_devices:
             self.__save_pnp_device(machine, pnp_device)
+        if print_display:
+            print('--- PNP devices saved ---')
 
     @staticmethod
     def __save_pnp_device(machine, pnp_device):
@@ -214,35 +231,42 @@ class AssignDesktopManager(models.Manager):
         except ObjectDoesNotExist:
             return PnpDevice.objects.create(machine=machine, **pnp_device)
 
-    def __save_cpu_usage(self, machine, cpu):
+    def __save_cpu_usage(self, machine, cpu, print_display=False):
         try:
             cpuObject = self.__get_cpu(machine, cpu)
         except Exception as error:
-            print(error)
+            if print_display:
+                print(error)
         else:
             CpuUsageLog.objects.create(cpu=cpuObject, usage=cpu['usage'])
+            if print_display:
+                print('--- CPU usage saved ---')
 
     @staticmethod
-    def __save_memory_usage(machine, memory_usage):
+    def __save_memory_usage(machine, memory_usage, print_display=False):
         MemoryStatistics.objects.create(machine=machine, **memory_usage)
+        if print_display:
+            print('--- Memory usage saved ---')
 
     @staticmethod
-    def __save_geo_location(machine, geo_location):
+    def __save_geo_location(machine, geo_location, print_display=False):
         if not GeoLocationLog.objects.filter(machine=machine, latitude=geo_location['latitude'], longitude=geo_location['longitude']).exists():
             GeoLocationLog.objects.create(machine=machine, **geo_location)
+        if print_display:
+            print('--- GEO location saved ---')
 
     def record_machine(self, data):
         machine = self.__get_machine(data['machine'], data['motherboard'])
 
-        self.__save_cpu_usage(machine, data['cpu'])
-        self.__save_gpu(machine, data['gpu'])
-        self.__save_memory_usage(machine, data['memory_usage'])
-        self.__save_geo_location(machine, data['geo_location'])
-        self.__save_rams(machine, data['memory'])
-        self.__save_pnp_devices(machine, data['pnp_devices'])
-        self.__save_networks(machine, data['networks'])
-        self.__save_disks(machine, data['disks'])
-        self.__save_volumes(machine, data['volumes'])
+        self.__save_cpu_usage(machine, data['cpu'], print_display=True)
+        self.__save_gpu(machine, data['gpu'], print_display=True)
+        self.__save_memory_usage(machine, data['memory_usage'], print_display=True)
+        self.__save_rams(machine, data['memory'], print_display=True)
+        self.__save_geo_location(machine, data['geo_location'], print_display=True)
+        self.__save_pnp_devices(machine, data['pnp_devices'], print_display=True)
+        self.__save_networks(machine, data['networks'], print_display=True)
+        self.__save_disks(machine, data['disks'], print_display=True)
+        self.__save_volumes(machine, data['volumes'], print_display=True)
 
 class Desktop(models.Model):
     machine = models.ForeignKey(MachineInformation, on_delete=models.CASCADE)

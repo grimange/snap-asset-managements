@@ -30,6 +30,7 @@ def receive_data(request):
         data['geo_location']['ip_address'] = get_client_ip(request)
         Desktop.objects.record_machine(data)
     except Exception as error:
+        print("error: ", error)
         return Response({"error": str(error)}, status=400)
     return Response({"message": "Machine data received successfully"}, status=status.HTTP_200_OK)
 
