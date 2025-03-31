@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 @method_decorator(login_required, name='dispatch')
 class DashboardView(View):
     template_name = 'dashboards/index.html'
+    template_hr = 'hr/index.html'
 
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name)
+        return render(request, self.template_hr)
